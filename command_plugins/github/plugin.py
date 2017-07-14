@@ -16,7 +16,7 @@ from hubcommander.bot_components.bot_classes import BotCommander
 from hubcommander.bot_components.decorators import hubcommander_command, auth
 from hubcommander.bot_components.slack_comm import send_info, send_success, send_error, send_raw
 from hubcommander.bot_components.parse_functions import extract_repo_name, parse_toggles
-from hubcommander.command_plugins.github.config import GITHUB_URL, GITHUB_VERSION, ORGS, USER_COMMAND_DICT
+from hubcommander.command_plugins.github.config import GITHUB_URL, GITHUB_VERSION, ORGS, USER_COMMAND_DICT, IMPLICIT_COMMAND_ENABLE
 from hubcommander.command_plugins.github.parse_functions import lookup_real_org, validate_homepage
 from hubcommander.command_plugins.github.decorators import repo_must_exist, github_user_exists, branch_must_exist
 
@@ -31,14 +31,14 @@ class GitHubPlugin(BotCommander):
                 "func": self.list_org_command,
                 "user_data_required": False,
                 "help": "Lists the GitHub organizations that are managed.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!CreateRepo": {
                 "command": "!CreateRepo",
                 "func": self.create_repo_command,
                 "user_data_required": True,
                 "help": "Creates a new PRIVATE [default] repository in the specified GitHub organization.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!AddCollab": {
                 "command": "!AddCollab",
@@ -46,28 +46,28 @@ class GitHubPlugin(BotCommander):
                 "user_data_required": True,
                 "help": "Adds an outside collaborator to a specific repository in a specific GitHub organization.",
                 "permitted_permissions": ["push", "pull"],  # To grant admin, add this to the config for
-                "enabled": True  # this command in the config.py.
+                "enabled": IMPLICIT_COMMAND_ENABLE  # this command in the config.py.
             },
             "!SetDescription": {
                 "command": "!SetDescription",
                 "func": self.set_description_command,
                 "user_data_required": True,
                 "help": "Adds/Modifies a GitHub repo's description.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!SetHomepage": {
                 "command": "!SetHomepage",
                 "func": self.set_repo_homepage_command,
                 "user_data_required": True,
                 "help": "Adds/Modifies a GitHub repo's homepage URL.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!SetDefaultBranch": {
                 "command": "!SetDefaultBranch",
                 "func": self.set_default_branch_command,
                 "user_data_required": True,
                 "help": "Sets the default branch for a repo.",
-                "enabled": True  # It is HIGHLY recommended you have auth enabled for this!!
+                "enabled": IMPLICIT_COMMAND_ENABLE  # It is HIGHLY recommended you have auth enabled for this!!
             },
             "!ListPRs": {
                 "command": "!ListPRs",
@@ -75,14 +75,14 @@ class GitHubPlugin(BotCommander):
                 "user_data_required": True,
                 "help": "List the Pull Requests for a repo.",
                 "permitted_states": ["open", "closed", "all"],
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!DeleteRepo": {
                 "command": "!DeleteRepo",
                 "func": self.delete_repo_command,
                 "user_data_required": True,
                 "help": "Delete a GitHub repository.",
-                "enabled": True  # It is HIGHLY recommended you have auth enabled for this!!
+                "enabled": IMPLICIT_COMMAND_ENABLE  # It is HIGHLY recommended you have auth enabled for this!!
             },
             "!AddUserToTeam": {
                 "command": "!AddUserToTeam",
@@ -90,49 +90,49 @@ class GitHubPlugin(BotCommander):
                 "user_data_required": True,
                 "help": "Adds a GitHub user to a specific team inside the organization.",
                 "permitted_roles": ["member", "maintainer"],
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!SetBranchProtection": {
                 "command": "!SetBranchProtection",
                 "func": self.set_branch_protection_command,
                 "user_data_required": True,
                 "help": "Toggles the branch protection for a repo.",
-                "enabled": True  # It is HIGHLY recommended you have auth enabled for this!!
+                "enabled": IMPLICIT_COMMAND_ENABLE  # It is HIGHLY recommended you have auth enabled for this!!
             },
             "!ListKeys": {
                 "command": "!ListKeys",
                 "func": self.list_deploy_keys_command,
                 "user_data_required": True,
                 "help": "List the Deploy Keys for a repo.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!AddKey": {
                 "command": "!AddKey",
                 "func": self.add_deploy_key_command,
                 "user_data_required": True,
                 "help": "Add Deploy Key for a repo.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!DeleteKey": {
                 "command": "!DeleteKey",
                 "func": self.delete_deploy_key_command,
                 "user_data_required": True,
                 "help": "Delete Deploy Key from a repo.",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!GetKey": {
                 "command": "!GetKey",
                 "func": self.get_deploy_key_command,
                 "user_data_required": True,
                 "help": "Get Deploy Key Public Key",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             },
             "!SetTopics": {
                 "command": "!SetTopics",
                 "func": self.set_repo_topics_command,
                 "user_data_required": True,
                 "help": "Sets the Topics for a GitHub repo",
-                "enabled": True
+                "enabled": IMPLICIT_COMMAND_ENABLE
             }
         }
         self.token = None

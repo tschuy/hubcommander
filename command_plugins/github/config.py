@@ -1,35 +1,29 @@
 from hubcommander.auth_plugins.enabled_plugins import AUTH_PLUGINS
+import json
+import os
+from pathlib import Path
 
 # Define the organizations that this Bot will examine.
-ORGS = {
-    "Real_Org_Name_here": {
-        "aliases": [
-            "some_alias_for_your_org_here"
-        ],
-        "public_only": False,   # False means that your org supports Private repos, True otherwise.
-        "new_repo_teams": [  # This is a list, so add all the teams you want to here...
-            {
-                "id": "0000000",        # The team ID for the team that you want new repos to be attached to
-                "perm": "push",         # The permission, either "push", "pull", or "admin"...
-                "name": "TeamName"      # The name of the team here...
-            }
-        ]
-    }
-}
-
+ORGS = json.loads(Path(os.environ["HUBCOMMANDER_ORGS"]).read_text())
 # github API Version
-GITHUB_VERSION = "application/vnd.github.v3+json"   # Is this still needed?
-
+GITHUB_VERSION = "application/vnd.github.v3+json"
 # GITHUB API PATH:
 GITHUB_URL = "https://api.github.com/"
 
-# You can use this to add/replace fields from the command_plugins dictionary:
-USER_COMMAND_DICT = {
-    # This is an example for enabling Duo 2FA support for the "!SetDefaultBranch" command:
-    # "!SetDefaultBranch": {
-        # "auth": {
-        #    "plugin": AUTH_PLUGINS["duo"],
-        #    "kwargs": {}
-        # }
-    #}
-}
+modules = {}
+def load_auth_plugin(module_name, class_name):
+    if modules.get(module_name, None):
+        return modules[module_name]
+    modules[module_name] = getattr(importlib.import_module(module_name), class_name)()
+
+USER_COMMAND_DICT = json.loads(Path(os.environ["HUBCOMMANDER_USER_COMMANDS"]).read_text())
+if USER_COMMAND_DICT:
+    for k, v in USER_COMMAND_DICT.items():
+        if v.get("auth", None):
+           USER_COMMAND_DICT[k]["auth"]["plugin"] = AUTH_PLUGINS[v["auth"]["plugin"]]
+           if not v["auth"].get("kwargs", None):
+               v["auth"]["kwargs"] = {}
+
+# if set to True, any commands not mentioned in the USER_COMMAND_DICT will be
+# enabled by default
+IMPLICIT_COMMAND_ENABLE = os.environ.get("IMPLICIT_COMMAND_ENABLE", True) == True
