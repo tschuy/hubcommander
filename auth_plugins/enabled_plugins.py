@@ -1,10 +1,5 @@
-"""
-Use this file to initialize all authentication plugins.
-
-The "setup" method will be executed by hubcommander on startup.
-"""
-#from auth_plugins.duo.plugin import DuoPlugin
+from hubcommander.auth_plugins.rollcontrol.plugin import RollPlugin
 
 AUTH_PLUGINS = {
-    #"duo": DuoPlugin()
+    "rollcontrol": RollPlugin()
 }
