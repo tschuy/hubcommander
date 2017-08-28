@@ -53,7 +53,7 @@ echo "[-->] Now building the Docker image..."
 
 
 # Build that Docker image...
-docker build  -t netflixoss/hubcommander:${BUILD_TAG} --rm=true . --build-arg RTM_VERSION=${RTM_VERSION}
+docker build  -t ${BUILD_IMAGE_NAME:-netflixoss/hubcommander}:${BUILD_TAG} --rm=true . --build-arg RTM_VERSION=${RTM_VERSION}
 
 echo
 echo "DONE!"

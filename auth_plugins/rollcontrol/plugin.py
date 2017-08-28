@@ -5,6 +5,7 @@ import collections
 import os
 from pathlib import Path
 import yaml
+import json
 
 from hubcommander.bot_components.bot_classes import BotAuthPlugin
 from hubcommander.bot_components.slack_comm import send_error  # send_info, send_success
@@ -55,4 +56,5 @@ class RollPlugin(BotAuthPlugin):
         if not valid:
             send_error(data["channel"],
                        "🙁 it looks like you don't have permission to do that.")
+        print(json.dumps({"user": user_data["profile"]["email"], "command":  data["text"], "authorized": valid}), flush=True)
         return valid
