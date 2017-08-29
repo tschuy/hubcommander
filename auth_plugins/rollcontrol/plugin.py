@@ -1,7 +1,7 @@
 """
 .. module: hubcommander.auth_plugins.rollcontrol.plugin
 """
-import collections
+from collections import namedtuple, defaultdict
 import os
 from pathlib import Path
 import yaml
@@ -15,12 +15,19 @@ class RollPlugin(BotAuthPlugin):
     def __init__(self, load_from_disk=True):
         super().__init__()
         if load_from_disk:
-            self.permissions = yaml.load(Path(os.environ["ROLLCONTROL_CONFIG"]).read_text())
+            self.permissions = yaml.safe_load(Path(os.environ["ROLLCONTROL_CONFIG"]).read_text())
 
-        # a mapping of command names to the function we use to parse their permissions
-        self.command_mapping = {
+        """
+        A mapping of command names to the function we use to parse their
+        permissions. Permissions functions take the data parameter from
+        Hubcommander and return a list of email addresses of users that
+        have permission to run that command.
+
+        By default, an unknown command returns no valid email addresses.
+        """
+        self.command_mapping = defaultdict(lambda: lambda x: [], {
             '!AddUserToTeam': self.add_user_to_team
-        }
+        })
 
     def setup(*args, **kwargs):
         return
@@ -28,14 +35,14 @@ class RollPlugin(BotAuthPlugin):
     def add_user_to_team(self, data):
         # right now, we assume the data is stored as "teams" -> org -> emails & teams
         # "!AddUserToTeam <UserGitHubId> <Org> <Team> <Role>"
-        Command = collections.namedtuple("command", ['command', 'userid', 'org', 'team', 'role'])
-        command = Command(*data["text"].split(" "))
+        Command = namedtuple("command", ['command', 'userid', 'org', 'team', 'role'])
+        command = Command(*data["text"].split())
         emails = []
 
         # load the org permissions
         for perm in self.permissions['teams'].get(command.org, []):
             # add all org-level email strings to the valid list
-            if type(perm) is str:
+            if isinstance(perm, str):
                 emails.append(perm)
             else:
                 # if perm is the team-level permissions for the team we're adding to,
@@ -45,14 +52,11 @@ class RollPlugin(BotAuthPlugin):
 
     # returns a list of users that have the right to run a given command
     def valid_users(self, data):
-        command_name = data["text"].split(" ")[0]
+        command_name = data["text"].split()[0]
         return self.command_mapping[command_name](data)
 
     def authenticate(self, data, user_data, **kwargs):
-        try:
-            valid = user_data["profile"]["email"] in self.valid_users(data)
-        except Exception as e:
-            send_error(data["channel"], str(e))
+        valid = user_data["profile"]["email"] in self.valid_users(data)
         if not valid:
             send_error(data["channel"],
                        "🙁 it looks like you don't have permission to do that.")

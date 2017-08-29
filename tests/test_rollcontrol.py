@@ -21,7 +21,7 @@ teams:
 
 def test_valid_users(slack_client):
     rp = RollPlugin(load_from_disk=False)
-    rp.permissions = yaml.load(permissions)
+    rp.permissions = yaml.safe_load(permissions)
 
     # able to add to first-organization/first-team
     emails = rp.valid_users({
