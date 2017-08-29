@@ -19,10 +19,9 @@ def load_auth_plugin(module_name, class_name):
 USER_COMMAND_DICT = json.loads(Path(os.environ["HUBCOMMANDER_USER_COMMANDS"]).read_text())
 if USER_COMMAND_DICT:
     for k, v in USER_COMMAND_DICT.items():
-        if v.get("auth", None):
+        if v.get("auth"):
            USER_COMMAND_DICT[k]["auth"]["plugin"] = AUTH_PLUGINS[v["auth"]["plugin"]]
-           if not v["auth"].get("kwargs", None):
-               v["auth"]["kwargs"] = {}
+           v["auth"].setdefault("kwargs", {})
 
 # if set to True, any commands not mentioned in the USER_COMMAND_DICT will be
 # enabled by default
