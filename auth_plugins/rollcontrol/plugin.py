@@ -56,9 +56,9 @@ class RollPlugin(BotAuthPlugin):
         return self.command_mapping[command_name](data)
 
     def authenticate(self, data, user_data, **kwargs):
-        valid = user_data["profile"]["email"] in self.valid_users(data)
+        valid = (not data.get('bot_id')) and user_data["profile"]["email"] in self.valid_users(data)
         if not valid:
             send_error(data["channel"],
                        "🙁 it looks like you don't have permission to do that.")
-        print(json.dumps({"user": user_data["profile"]["email"], "command":  data["text"], "authorized": valid}), flush=True)
+        print(json.dumps({"user": user_data["profile"]["email"], "command":  data["text"], "authorized": valid, "bot": data.get("bot_id", False)}), flush=True)
         return valid
