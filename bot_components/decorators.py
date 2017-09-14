@@ -122,10 +122,10 @@ class SilentParser(argparse.ArgumentParser):
 
 def log_func(plugin_obj, data, user_data):
     print(json.dumps({
-        "user": user_data["name"],
-        "is_bot": user_data["is_bot"],
-        "command": data["text"],
-        "message_time": data["ts"],
+        "user": user_data.get("name"),
+        "is_bot": user_data.get("is_bot"),
+        "command": data.get("text"),
+        "message_time": data.get("ts"),
         "current_time": time.time()
     }))
 

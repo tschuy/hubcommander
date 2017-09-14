@@ -69,8 +69,26 @@ def test_in_org(slack_client):
     rp.permissions = yaml.load(permissions)
     # alice should be allowed, since she is listed in first-organization
     assert rp.authenticate(
-        {"text": "!AddUserToTeam ghname first-organization third-team member"},
-        {"profile": {"email": "alice@first.example.com"}}
+        {
+            "text": "!AddUserToTeam ghname first-organization third-team member",
+            "ts": "1505429593.000286"
+        },
+        {"profile": {"email": "alice@first.example.com"}, "name": "alice"}
+    )
+
+
+def test_bot(slack_client):
+    rp = RollPlugin(load_from_disk=False)
+    rp.permissions = yaml.load(permissions)
+    # alice should be allowed, but not if it's a bot pretending to be her
+    assert not rp.authenticate(
+        {
+            "text": "!AddUserToTeam ghname first-organization third-team member",
+            "bot_id": 123,
+            "channel": "chn",
+            "ts": "1505429593.000286"
+        },
+        {"profile": {"email": "alice@first.example.com"}, "name": "alice"}
     )
 
 
@@ -82,9 +100,10 @@ def test_not_in_org(slack_client):
     assert not rp.authenticate(
         {
             "text": "!AddUserToTeam ghname first-organization newteam member",
-            "channel": "chn"
+            "channel": "chn",
+            "ts": "1505429593.000286"
         },
-        {"profile": {"email": "felix@first.example.com"}}
+        {"name": "felix.mendelssohn", "profile": {"email": "felix@first.example.com"}}
     )
 
     actually_said(
@@ -103,6 +122,9 @@ def test_in_team(slack_client):
     # dan should be allowed, since he is listed in the
     # first-organization/second-team
     assert rp.authenticate(
-        {"text": "!AddUserToTeam user first-organization second-team member"},
-        {"profile": {"email": "dan@first.example.com"}}
+        {
+            "text": "!AddUserToTeam user first-organization second-team member",
+            "ts": "1505429593.000286"
+        },
+        {"profile": {"email": "dan@first.example.com"}, "name": "dan"}
     )
