@@ -13,10 +13,7 @@ RUN \
   apt-get upgrade -y && \
   apt-get install python3 python3-venv nano -y
 
-# Add all the other stuff to the plugins:
-COPY / /python-rtmbot-${RTM_VERSION}/hubcommander
-
-# Install all the things:
+# Install rtmbot reqs:
 RUN \
   # Rename the rtmbot:
   mv /python-rtmbot-${RTM_VERSION} /rtmbot && \
@@ -28,11 +25,18 @@ RUN \
   /bin/bash -c "source /venv/bin/activate && pip install --upgrade pip" && \
   /bin/bash -c "source /venv/bin/activate && pip install --upgrade setuptools" && \
   /bin/bash -c "source /venv/bin/activate && pip install wheel" && \
-  /bin/bash -c "source /venv/bin/activate && pip install /rtmbot/hubcommander" && \
+  /bin/bash -c "source /venv/bin/activate && pip install pyyaml boto3 duo_client tabulate validators rtmbot"
 
+# Add hubcommander:
+ADD / /rtmbot/hubcommander
+
+# install hubcommander reqs and finish setup
+RUN \
   # The launcher script:
+  /bin/bash -c "source /venv/bin/activate && pip install /rtmbot/hubcommander" && \
   mv /rtmbot/hubcommander/launch_in_docker.sh / && chmod +x /launch_in_docker.sh && \
   rm /rtmbot/hubcommander/python-rtmbot-${RTM_VERSION}.tar.gz
+
 
 # DEFINE YOUR ENV VARS FOR SECRETS HERE:
 ENV SLACK_TOKEN="REPLACEMEINCMDLINE" \
