@@ -16,8 +16,11 @@ from hubcommander.bot_components.slack_comm import send_error  # send_info, send
 class RollPlugin(BotAuthPlugin):
     def __init__(self, load_from_disk=True):
         super().__init__()
-        # start serving prometheus over port
-        start_http_server(os.getenv("PROMETHEUS_PORT", 8080))
+        if os.getenv("PROMETHEUS_PORT"):
+            # start serving prometheus over port
+            start_http_server(int(os.getenv("PROMETHEUS_PORT")))
+            self.counter = Counter('auth_requests_total', 'Authentication Requests', ['success'])
+
         if load_from_disk:
             self.permissions = yaml.safe_load(Path(os.environ["ROLLCONTROL_CONFIG"]).read_text())
 
@@ -32,7 +35,6 @@ class RollPlugin(BotAuthPlugin):
         self.command_mapping = defaultdict(lambda: lambda x: [], {
             '!AddUserToTeam': self.add_user_to_team
         })
-        self.counter = Counter('auth_requests_total', 'Authentication Requests', ['success'])
 
     def setup(*args, **kwargs):
         return
@@ -77,4 +79,5 @@ class RollPlugin(BotAuthPlugin):
             "message_time": data["ts"],
             "bot": data.get("bot_id", False)
         }))
-        self.counter.labels(success="{}".format(valid)).inc()
+        if os.getenv("PROMETHEUS_PORT"):
+            self.counter.labels(success="{}".format(valid)).inc()
