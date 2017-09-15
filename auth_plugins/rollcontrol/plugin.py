@@ -16,9 +16,9 @@ from hubcommander.bot_components.slack_comm import send_error  # send_info, send
 class RollPlugin(BotAuthPlugin):
     def __init__(self, load_from_disk=True):
         super().__init__()
-        if os.getenv("PROMETHEUS_PORT"):
+        if os.getenv("PROMETHEUS_PORT") and os.environ["PROMETHEUS_PORT"].isdigit():
             # start serving prometheus over port
-            start_http_server(int(os.getenv("PROMETHEUS_PORT")))
+            start_http_server(int(os.environ["PROMETHEUS_PORT"]))
             self.counter = Counter('auth_requests_total', 'Authentication Requests', ['success'])
 
         if load_from_disk:
