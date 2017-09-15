@@ -28,7 +28,8 @@ install_requires = [
     'duo_client==3.0',
     'tabulate>=0.7.7',
     'validators>=0.11.1',
-    'rtmbot==0.4.0'
+    'rtmbot==0.4.0',
+    'prometheus_client==0.0.21'
 ]
 
 tests_require = [

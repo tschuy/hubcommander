@@ -8,6 +8,8 @@
 """
 import argparse
 import shlex
+import time
+import json
 
 from hubcommander.bot_components.parse_functions import ParseException
 from hubcommander.bot_components.slack_comm import send_info, send_error
@@ -104,10 +106,34 @@ def perform_additional_verification(plugin_obj, args, **kwargs):
     return args
 
 
+class BadArgumentsException(Exception):
+    pass
+
+
+class SilentParser(argparse.ArgumentParser):
+    """
+    By default, the argparse.ArgumentParser error message will print and then
+    exit. For logging purposes, we don't want the built-in error message, so
+    we can just silence argparse and log errors elsewhere.
+    """
+    def error(self, message):
+        raise BadArgumentsException
+
+
+def log_func(plugin_obj, data, user_data):
+    print(json.dumps({
+        "user": user_data.get("name"),
+        "is_bot": user_data.get("is_bot"),
+        "command": data.get("text"),
+        "message_time": data.get("ts"),
+        "current_time": time.time()
+    }))
+
 def hubcommander_command(**kwargs):
     def command_decorator(func):
         def decorated_command(plugin_obj, data, user_data):
-            parser = argparse.ArgumentParser(prog=kwargs["name"],
+            log_func(plugin_obj, data, user_data)
+            parser = SilentParser(prog=kwargs["name"],
                                              description=kwargs["description"],
                                              usage=kwargs["usage"])
 
@@ -145,7 +171,7 @@ def hubcommander_command(**kwargs):
             try:
                 args = vars(parser.parse_args(split_args))
 
-            except SystemExit as _:
+            except BadArgumentsException as _:
                 send_info(data["channel"], format_help_text(data, user_data, **kwargs), markdown=True)
                 return
 
@@ -169,7 +195,6 @@ def hubcommander_command(**kwargs):
         return decorated_command
 
     return command_decorator
-
 
 def auth(**kwargs):
     def command_decorator(func):

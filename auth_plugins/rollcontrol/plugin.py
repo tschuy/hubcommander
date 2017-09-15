@@ -4,8 +4,10 @@
 from collections import namedtuple, defaultdict
 import os
 from pathlib import Path
-import yaml
 import json
+import yaml
+
+from prometheus_client import Counter, start_http_server
 
 from hubcommander.bot_components.bot_classes import BotAuthPlugin
 from hubcommander.bot_components.slack_comm import send_error  # send_info, send_success
@@ -14,6 +16,11 @@ from hubcommander.bot_components.slack_comm import send_error  # send_info, send
 class RollPlugin(BotAuthPlugin):
     def __init__(self, load_from_disk=True):
         super().__init__()
+        if os.getenv("PROMETHEUS_PORT") and os.environ["PROMETHEUS_PORT"].isdigit():
+            # start serving prometheus over port
+            start_http_server(int(os.environ["PROMETHEUS_PORT"]))
+            self.counter = Counter('auth_requests_total', 'Authentication Requests', ['success'])
+
         if load_from_disk:
             self.permissions = yaml.safe_load(Path(os.environ["ROLLCONTROL_CONFIG"]).read_text())
 
@@ -60,5 +67,17 @@ class RollPlugin(BotAuthPlugin):
         if not valid:
             send_error(data["channel"],
                        "🙁 it looks like you don't have permission to do that.")
-        print(json.dumps({"user": user_data["profile"]["email"], "command":  data["text"], "authorized": valid, "bot": data.get("bot_id", False)}), flush=True)
+        self.log(data, user_data, valid)
         return valid
+
+    def log(self, data, user_data, valid):
+        print(json.dumps({
+            "user": user_data["name"],
+            "email": user_data["profile"]["email"],
+            "command":  data["text"],
+            "authorized": valid,
+            "message_time": data["ts"],
+            "bot": data.get("bot_id", False)
+        }))
+        if os.getenv("PROMETHEUS_PORT"):
+            self.counter.labels(success="{}".format(valid)).inc()
